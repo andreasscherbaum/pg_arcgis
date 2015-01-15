@@ -1,0 +1,3 @@
+-- commit the transaction
+COMMIT;
+
