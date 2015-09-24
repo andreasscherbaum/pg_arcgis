@@ -664,16 +664,45 @@ import urllib2, urllib
 from time import sleep
 from pprint import pprint
 
+from ConfigParser import SafeConfigParser
+config = SafeConfigParser()
+
+# current database OID, for config filename
+res = plpy.execute("SELECT arcgis._database_oid() AS db")
+curr_db_oid = res[0]["db"]
+
+# read configfile
+found_config = config.read('arcgis_config.' + curr_db_oid)
+if len(found_config) == 0:
+    plpy.error("ArcGIS config file not found")
+config_auth_url = config.get('arcgis', 'auth_url')
+config_client_id = config.get('arcgis', 'client_id')
+config_client_secret = config.get('arcgis', 'client_secret')
+config_geocode_url = config.get('arcgis', 'geocode_url')
+config_debug = config.get('arcgis', 'debug')
+
 
 usr_struct = {'text': address, 'f': 'json'}
 
-plpy.notice('resolving: ' + address)
+if config_debug == 'true':
+    plpy.notice('resolving: ' + address)
+
+
+request_address = config_geocode_url + 'World/GeocodeServer/find?%s&f=json&outSR=4326&category=Address,Postal&outFields=*' % urllib.urlencode(usr_struct)
+
+request_headers = {
+    "Accept-Language": "en-US,en",
+    "User-Agent": "Mozilla/5.0 (pg-arcgis)",
+    "Connection": "close",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache"
+}
+
 
 # try multiple times in case the lookup fails the first time (happens sometimes)
 for attempt in range(3):
     try:
-        # todo: use configured geocoder address
-        data = urllib2.urlopen('http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/find?%s&f=json&outSR=4326&category=Address,Postal&outFields=*' % urllib.urlencode(usr_struct)).read()
+        data = urllib2.urlopen(urllib2.Request(request_address, headers=request_headers)).read()
         #plpy.notice('test' + data)
 
         # sometimes an 400 error (no data found) is returned, another loop is unnecessary
@@ -683,7 +712,7 @@ for attempt in range(3):
                 break
 
         # simplified version of the query
-        # data = urllib2.urlopen('http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/find?%s' % urllib.urlencode(usr_struct)).read()
+        # data = urllib2.urlopen(config_geocode_url + 'World/GeocodeServer/find?%s' % urllib.urlencode(usr_struct)).read()
 
         # this only breaks if the urlopen() was successful (no network error), else another attempt is made
         break
@@ -827,13 +856,45 @@ from time import sleep
 from pprint import pprint
 
 
+from ConfigParser import SafeConfigParser
+config = SafeConfigParser()
+
+# current database OID, for config filename
+res = plpy.execute("SELECT arcgis._database_oid() AS db")
+curr_db_oid = res[0]["db"]
+
+# read configfile
+found_config = config.read('arcgis_config.' + curr_db_oid)
+if len(found_config) == 0:
+    plpy.error("ArcGIS config file not found")
+config_auth_url = config.get('arcgis', 'auth_url')
+config_client_id = config.get('arcgis', 'client_id')
+config_client_secret = config.get('arcgis', 'client_secret')
+config_geocode_url = config.get('arcgis', 'geocode_url')
+config_debug = config.get('arcgis', 'debug')
+
+
 usr_struct = {'location': str(x) + ',' + str(y), 'f': 'json'}
+
+if config_debug == 'true':
+    plpy.notice('resolving: ' + str(x) + ',' + str(y))
+
+
+request_address = config_geocode_url + 'World/GeocodeServer/reverseGeocode?%s&f=json&outSR=4326&langCode=US&distance=10000' % urllib.urlencode(usr_struct)
+
+request_headers = {
+    "Accept-Language": "en-US,en",
+    "User-Agent": "Mozilla/5.0 (pg-arcgis)",
+    "Connection": "close",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache"
+}
+
 
 # try multiple times in case the lookup fails the first time (happens sometimes)
 for attempt in range(3):
     try:
-        # todo: use configured geocoder address
-        data = urllib2.urlopen('http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode?%s&f=json&outSR=4326&langCode=US&distance=10000' % urllib.urlencode(usr_struct)).read()
+        data = urllib2.urlopen(urllib2.Request(request_address, headers=request_headers)).read()
 
         # sometimes an 400 error (no data found) is returned, another loop is unnecessary
         j = json.loads(data)
