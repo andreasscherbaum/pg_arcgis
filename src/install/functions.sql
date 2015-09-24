@@ -12,8 +12,6 @@ CREATE OR REPLACE FUNCTION arcgis.check_configuration ()
     RETURNS void
 AS $BODY$
 DECLARE
-    query_txt TEXT;
-    record_val RECORD;
 BEGIN
 
     -- check "client_id"
@@ -93,7 +91,6 @@ CREATE OR REPLACE FUNCTION arcgis._set_configuration (TEXT, TEXT)
 AS $BODY$
 DECLARE
     query_txt TEXT;
-    record_val RECORD;
     key_name ALIAS FOR $1;
     value ALIAS FOR $2;
 BEGIN
