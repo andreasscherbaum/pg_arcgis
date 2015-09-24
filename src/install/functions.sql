@@ -247,10 +247,12 @@ BEGIN
 
     IF vendor = 'PostgreSQL' THEN
         -- PostgreSQL code
+        RAISE NOTICE 'Writing configuration for PostgreSQL';
         PERFORM arcgis._delete_configuration_postgresql();
         PERFORM arcgis._write_configuration_to_disk_postgresql();
     ELSEIF vendor = 'Greenplum' THEN
         -- Greenplum code
+        RAISE NOTICE 'Writing configuration for Greenplum';
         PERFORM arcgis._delete_configuration_greenplum();
         -- the PostgreSQL code writes the config file into the current directory
         PERFORM arcgis._write_configuration_to_disk_postgresql();
