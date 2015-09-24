@@ -300,7 +300,7 @@ res = plpy.execute("SELECT arcgis._database_oid() AS db")
 curr_db_oid = res[0]["db"]
 
 
-# read configuration
+# read configuration from database
 res = plpy.execute("SELECT * FROM arcgis.configuration ORDER BY key")
 
 # open config file (local to data directory)
