@@ -2,7 +2,7 @@ CREATE TABLE test_arcgis.pivotal_addresses (
   id           SERIAL       NOT NULL PRIMARY KEY,
   address      TEXT         NOT NULL,
   lat          TEXT,
-  lng          TEXT,
+  lon          TEXT,
   location_tmp TEXT
 );
 SELECT AddGeometryColumn('test_arcgis', 'pivotal_addresses', 'location', '4326', 'POINT', 2);
@@ -36,12 +36,12 @@ SELECT AddGeometryColumn('test_arcgis', 'pivotal_addresses', 'location', '4326',
 
 
 -- load prepopulated data
-COPY test_arcgis.pivotal_addresses (address, lat, lng, location_tmp) FROM '/home/gpadmin/pivotal-addresses.txt' WITH DELIMITER AS E'\t';
--- COPY test_arcgis.pivotal_addresses (address, lat, lng, location_tmp) TO '/home/gpadmin/pivotal-addresses.txt' WITH DELIMITER AS E'\t';
+COPY test_arcgis.pivotal_addresses (address, lat, lon, location_tmp) FROM '/home/gpadmin/pivotal-addresses_arcgis.txt' WITH DELIMITER AS E'\t';
+-- COPY test_arcgis.pivotal_addresses (address, lat, lon, location_tmp) TO '/home/gpadmin/pivotal-addresses_arcgis.txt' WITH DELIMITER AS E'\t';
 
 -- UPDATE test_arcgis.pivotal_addresses SET location_tmp = arcgis.find_return_point(address);
 UPDATE test_arcgis.pivotal_addresses SET location = ST_GeomFromText('POINT(' || location_tmp || ')', 4326) WHERE location_tmp IS NOT NULL;
-UPDATE test_arcgis.pivotal_addresses SET lng = ST_X(location), lat = ST_Y(location) WHERE location_tmp IS NOT NULL;
+UPDATE test_arcgis.pivotal_addresses SET lon = ST_X(location), lat = ST_Y(location) WHERE location_tmp IS NOT NULL;
 CREATE INDEX test_arcgis_pivotal_addresses_location ON test_arcgis.pivotal_addresses USING gist(location);
 
 
@@ -54,23 +54,52 @@ CREATE TABLE test_arcgis.emc_addresses (
   city         TEXT         NOT NULL,
   zip          TEXT         NOT NULL,
   lat          TEXT,
-  lng          TEXT,
+  lon          TEXT,
   location_tmp TEXT
 );
 SELECT AddGeometryColumn('test_arcgis', 'emc_addresses', 'location', '4326', 'POINT', 2);
 
 -- load prepopulated data
--- COPY test_arcgis.emc_addresses (state, street, city, zip) FROM '/home/gpadmin/emc-addresses-parsed.txt' WITH DELIMITER AS E'\t';
-COPY test_arcgis.emc_addresses (state, street, city, zip, location_tmp) FROM '/home/gpadmin/emc-addresses-load.txt' WITH DELIMITER AS E'\t';
+-- COPY test_arcgis.emc_addresses (state, street, city, zip) FROM '/home/gpadmin/emc-addresses-parsed_arcgis.txt' WITH DELIMITER AS E'\t';
+COPY test_arcgis.emc_addresses (state, street, city, zip, location_tmp) FROM '/home/gpadmin/emc-addresses-load_arcgis.txt' WITH DELIMITER AS E'\t';
 
 -- UPDATE test_arcgis.emc_addresses SET location_tmp = arcgis.find_return_point(street || ', ' || city || ', ' || state || ', ' || zip);
 -- UPDATE test_arcgis.emc_addresses SET location_tmp = arcgis.find_return_point(street || ', ' || city || ' ' || zip || ', ' || state) WHERE location_tmp IS NULL;
 
 UPDATE test_arcgis.emc_addresses SET location = ST_GeomFromText('POINT(' || location_tmp || ')', 4326) WHERE location_tmp IS NOT NULL;
-UPDATE test_arcgis.emc_addresses SET lng = ST_X(location), lat = ST_Y(location) WHERE location_tmp IS NOT NULL;
+UPDATE test_arcgis.emc_addresses SET lon = ST_X(location), lat = ST_Y(location) WHERE location_tmp IS NOT NULL;
 
--- COPY test_arcgis.emc_addresses (state, street, city, zip, location_tmp) TO '/home/gpadmin/emc-addresses-load.txt' WITH DELIMITER AS E'\t';
+-- COPY test_arcgis.emc_addresses (state, street, city, zip, location_tmp) TO '/home/gpadmin/emc-addresses-load_arcgis.txt' WITH DELIMITER AS E'\t';
 CREATE INDEX test_arcgis_emc_addresses_location ON test_arcgis.emc_addresses USING gist(location);
+
+
+
+
+
+CREATE TABLE test_arcgis.emc_addresses_worldwide (
+  id           SERIAL       NOT NULL PRIMARY KEY,
+  address      TEXT         NOT NULL,
+  lat          TEXT,
+  lon          TEXT,
+  location_tmp TEXT
+);
+SELECT AddGeometryColumn('test_arcgis', 'emc_addresses_worldwide', 'location', '4326', 'POINT', 2);
+
+-- load prepopulated data
+--SET client_encoding TO 'latin1';
+-- COPY test_arcgis.emc_addresses_worldwide (address) FROM '/home/gpadmin/emc-addresses-worldwide-parsed_arcgis.txt' WITH DELIMITER AS E'\t';
+--RESET client_encoding;
+COPY test_arcgis.emc_addresses_worldwide (address, location_tmp) FROM '/home/gpadmin/emc-addresses-worldwide-load_arcgis.txt' WITH DELIMITER AS E'\t';
+
+-- UPDATE test_arcgis.emc_addresses_worldwide SET location_tmp = arcgis.find_return_point(address);
+
+UPDATE test_arcgis.emc_addresses_worldwide SET location = ST_GeomFromText('POINT(' || location_tmp || ')', 4326) WHERE location_tmp IS NOT NULL;
+UPDATE test_arcgis.emc_addresses_worldwide SET lon = ST_X(location), lat = ST_Y(location) WHERE location_tmp IS NOT NULL;
+
+-- COPY test_arcgis.emc_addresses_worldwide (address, location_tmp) TO '/home/gpadmin/emc-addresses-worldwide-load_arcgis.txt' WITH DELIMITER AS E'\t';
+CREATE INDEX test_arcgis_emc_addresses_worldwide_location ON test_arcgis.emc_addresses_worldwide USING gist(location);
+
+
 
 
 CREATE TABLE test_arcgis.target_shops (
@@ -83,26 +112,27 @@ CREATE TABLE test_arcgis.target_shops (
   url          TEXT         NOT NULL,
   phone        TEXT         NOT NULL,
   lat          TEXT,
-  lng          TEXT,
+  lon          TEXT,
   location_tmp TEXT
 );
 SELECT AddGeometryColumn('test_arcgis', 'target_shops', 'location', '4326', 'POINT', 2);
 
--- COPY test_arcgis.target_shops (state, url, name, street, city, zip, phone) FROM '/home/gpadmin/target-shops.txt' WITH DELIMITER AS E'\t';
+-- COPY test_arcgis.target_shops (state, url, name, street, city, zip, phone) FROM '/home/gpadmin/target-shops_arcgis.txt' WITH DELIMITER AS E'\t';
 
 -- UPDATE test_arcgis.target_shops SET location_tmp = arcgis.find_return_point(street || ', ' || city || ', ' || state || ', ' || zip);
 -- UPDATE test_arcgis.target_shops SET location_tmp = arcgis.find_return_point(street || ', ' || city || ' ' || zip || ', ' || state) WHERE location_tmp IS NULL;
 
 -- load prepopulated data
-COPY test_arcgis.target_shops (name, state, street, city, zip, url, phone, lat, lng, location_tmp) FROM '/home/gpadmin/target-shops.txt' WITH DELIMITER AS E'\t';
+COPY test_arcgis.target_shops (name, state, street, city, zip, url, phone, lat, lon, location_tmp) FROM '/home/gpadmin/target-shops_arcgis.txt' WITH DELIMITER AS E'\t';
 
 UPDATE test_arcgis.target_shops SET location = ST_GeomFromText('POINT(' || location_tmp || ')', 4326) WHERE location_tmp IS NOT NULL;
-UPDATE test_arcgis.target_shops SET lng = ST_X(location), lat = ST_Y(location) WHERE location_tmp IS NOT NULL;
--- COPY test_arcgis.target_shops (name, state, street, city, zip, url, phone, lat, lng, location_tmp) TO '/home/gpadmin/target-shops.txt' WITH DELIMITER AS E'\t';
+UPDATE test_arcgis.target_shops SET lon = ST_X(location), lat = ST_Y(location) WHERE location_tmp IS NOT NULL;
+-- COPY test_arcgis.target_shops (name, state, street, city, zip, url, phone, lat, lon, location_tmp) TO '/home/gpadmin/target-shops_arcgis.txt' WITH DELIMITER AS E'\t';
 CREATE INDEX test_arcgis_target_shops_location ON test_arcgis.target_shops USING gist(location);
 
 
 ANALYZE test_arcgis.pivotal_addresses;
 ANALYZE test_arcgis.emc_addresses;
+ANALYZE test_osm.emc_addresses_worldwide;
 ANALYZE test_arcgis.target_shops;
 
