@@ -34,6 +34,11 @@ BEGIN
         RAISE EXCEPTION E'No valid \'geocode_url\' found in configuration';
     END IF;
 
+    -- check "debug"
+    IF arcgis._check_configuration('debug', TRUE) = FALSE THEN
+        RAISE EXCEPTION E'No valid \'debug\' flag found in configuration';
+    END IF;
+
 END;
 $BODY$ LANGUAGE 'plpgsql';
 
@@ -194,6 +199,31 @@ BEGIN
     END IF;
 
     PERFORM arcgis._set_configuration('geocode_url', value);
+
+    RETURN;
+END;
+$BODY$ LANGUAGE 'plpgsql';
+
+
+
+-- set debug flag
+--
+-- parameters:
+--  * true or false
+-- return:
+--  none
+CREATE OR REPLACE FUNCTION arcgis.set_debug(BOOLEAN)
+    RETURNS void
+AS $BODY$
+DECLARE
+    value ALIAS FOR $1;
+BEGIN
+
+    if value = TRUE THEN
+        PERFORM arcgis._set_configuration('debug', 'true');
+    ELSE
+        PERFORM arcgis._set_configuration('debug', 'false');
+    END IF;
 
     RETURN;
 END;
@@ -670,14 +700,16 @@ j = json.loads(data)
 if 'error' in j:
     if j['error']['code'] == 400:
         # not really an error, just no match for the lookup
-        plpy.notice('no geocoordinates found for: ' + address)
+        if config_debug == 'true':
+            plpy.notice('no geocoordinates found for: ' + address)
     else:
         plpy.error('encountered an error: ' + str(j['error']['code']))
     return None
 
 # nothing found
 if len(j['locations']) == 0:
-    plpy.notice('no geocoordinates found for: ' + address)
+    if config_debug == 'true':
+        plpy.notice('no geocoordinates found for: ' + address)
     return None
 
 
@@ -827,7 +859,8 @@ j = json.loads(data)
 if 'error' in j:
     if j['error']['code'] == 400:
         # not really an error, just no match for the lookup
-        plpy.notice('no address found for: ' + str(x) + ',' + str(y))
+        if config_debug == 'true':
+            plpy.notice('no address found for: ' + str(x) + ',' + str(y))
     else:
         plpy.error('encountered an error: ' + str(j['error']['code']))
     return None
