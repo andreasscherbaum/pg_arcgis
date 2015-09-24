@@ -240,8 +240,10 @@ BEGIN
     -- there is an implicit assumption that if _database_vendor() knows about the vendor, all other places know as well
     vendor := arcgis._database_vendor();
 
-    -- find out the current database oid
+    -- find out the current database OID
     curr_db_oid := arcgis._database_oid();
+    -- RAISE NOTICE 'Current database OID: %', curr_db_oid;
+    -- RAISE NOTICE 'Database vendor: %', vendor;
 
     IF vendor = 'PostgreSQL' THEN
         -- PostgreSQL code
@@ -290,7 +292,8 @@ CREATE OR REPLACE FUNCTION arcgis._write_configuration_to_disk_postgresql ()
     RETURNS void
 AS $BODY$
 
-# get current database oid
+
+# get current database OID
 res = plpy.execute("SELECT arcgis._database_oid() AS db")
 curr_db_oid = res[0]["db"]
 
@@ -331,7 +334,7 @@ import subprocess
 from subprocess import CalledProcessError
 
 
-# get current database name
+# get current database OID
 res = plpy.execute("SELECT arcgis._database_oid() AS db")
 curr_db_oid = res[0]["db"]
 
@@ -411,7 +414,7 @@ AS $BODY$
 import os
 
 
-# get current database name
+# get current database OID
 res = plpy.execute("SELECT arcgis._database_oid() AS db")
 curr_db_oid = res[0]["db"]
 
@@ -441,12 +444,13 @@ import subprocess
 from subprocess import CalledProcessError
 
 
-# get current database name
+# get current database OID
 res = plpy.execute("SELECT arcgis._database_oid() AS db")
 curr_db_oid = res[0]["db"]
 
 # select all segments and both masters
 # by selecting the data here and not in the calling function, we avoid the need to verify the input data
+# unlike the _copy_configuration_to_segments_greenplum() function, do not exclude the current dbid
 query_str = """SELECT sc.hostname AS hostname,
                       sc.address AS address,
                       sc.port AS port,
