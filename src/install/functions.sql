@@ -1,4 +1,5 @@
--- code for future features: OAuth and paid features
+-- code for future features: OAuth, paid features, debug flag, max distance for reverse lookup, resolution for lookup
+
 
 
 -- check configuration
