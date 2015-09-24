@@ -237,7 +237,7 @@ DECLARE
     vendor        TEXT;
 BEGIN
 
-    -- there is an implicit assumption that if _database_vendor() knows about the vendor, all other places are changed as well
+    -- there is an implicit assumption that if _database_vendor() knows about the vendor, all other places know as well
     vendor := arcgis._database_vendor();
 
     -- find out the current database oid
@@ -351,6 +351,7 @@ res = plpy.execute(query_str)
 for row in res:
     #plpy.info('Update: ' + str(row["address"]) + ':' + str(row["fselocation"]) + '/')
     # implicit assumption that Greenplum runs on Unix only (that is: Linux + Solaris)
+    # scp option -B will not ask for password, but rather fail if the file cannot be copied
     scp_string = ['scp', '-B', '-q', 'arcgis_config.' + curr_db_oid, str(row["address"]) + ':' + str(row["fselocation"]) + '/']
     #plpy.info(' '.join(scp_string))
     try:
@@ -378,7 +379,7 @@ DECLARE
     vendor        TEXT;
 BEGIN
 
-    -- there is an implicit assumption that if _database_vendor() knows about the vendor, all other places are changed as well
+    -- there is an implicit assumption that if _database_vendor() knows about the vendor, all other places know as well
     vendor := arcgis._database_vendor();
 
     IF vendor = 'PostgreSQL' THEN
@@ -459,6 +460,7 @@ res = plpy.execute(query_str)
 for row in res:
     #plpy.info('Delete: ' + str(row["address"]) + ':' + str(row["fselocation"]) + '/')
     # implicit assumption that Greenplum runs on Unix only (that is: Linux + Solaris)
+    # ssh will not ask for password, but rather fail if the connection cannot be established
     ssh_string = ['ssh', '-o', 'PasswordAuthentication=no', '-q', '-T', str(row["address"]), 'rm -f ' + str(row["fselocation"]) + '/' + 'arcgis_config.' + curr_db_oid + '']
     #plpy.info(' '.join(ssh_string))
     try:
@@ -580,6 +582,8 @@ BEGIN
     RETURN '';
 
 END;
+-- this function is defined IMMUTABLE in order to execute it on Greenplum segments
+-- it can be safely assumed that the database vendor will not change
 $BODY$ LANGUAGE 'plpgsql' IMMUTABLE;
 
 
