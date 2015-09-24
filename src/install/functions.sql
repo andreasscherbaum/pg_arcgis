@@ -659,7 +659,7 @@ for attempt in range(3):
         break
     except:
         # failed too often
-        plpy.error("failed to connect GeocodeServer for: " + address)
+        plpy.error("failed to connect to GeocodeServer for: " + address)
 
 
 #plpy.notice(data)
@@ -816,7 +816,7 @@ for attempt in range(3):
         break
     except:
         # failed too often
-        plpy.error("failed to connect GeocodeServer for: " + str(x) + ', ' + str(y))
+        plpy.error("failed to connect to GeocodeServer for: " + str(x) + ', ' + str(y))
 
 
 #plpy.notice(data)
