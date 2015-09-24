@@ -503,10 +503,13 @@ BEGIN
     RETURN rec.dboid;
 
 END;
+-- this function is defined IMMUTABLE in order to execute it on Greenplum segments
+-- it can be safely assumed that the database OID will not change
 $BODY$ LANGUAGE 'plpgsql' IMMUTABLE;
 
 
 
+-- dead code:
 -- return the current database name
 --
 -- parameters:
@@ -533,6 +536,7 @@ $BODY$ LANGUAGE 'plpgsql' IMMUTABLE;
 
 
 
+-- dead code:
 -- validate a database name
 --
 -- parameters:
