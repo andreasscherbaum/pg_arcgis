@@ -868,7 +868,7 @@ DECLARE
     ret TEXT;
 BEGIN
     ret := 'SELECT * FROM arcgis.reverseGeocode(' || quote_literal(x) || ', ' || quote_literal(y) || ');';
-    RAISE NOTICE 'query: %', ret;
+    -- RAISE NOTICE 'query: %', ret;
     EXECUTE ret INTO rec;
     IF rec IS NULL THEN
         RETURN NULL;
